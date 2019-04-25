@@ -1,4 +1,4 @@
-# Copyright (C) 2018 King Paul
+# Copyright (C) 2018 Paul King
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
@@ -25,96 +25,113 @@
 
 
 """
-Sinogram Toolbox
-
-@author: king.r.paul@gmail.com
+Tomo Sinogram Tools
 """
 
 from string import digits as DIGITS
 from string import ascii_letters as LETTERS
 import csv
-
+import re, sys
 import numpy as np
 
-from pymedphys_utilities.libutils import get_imports
-IMPORTS = get_imports(globals())
+if 'pymedphys' in __file__:
+    try:
+        from ...libutils import get_imports
+        IMPORTS = get_imports(globals())
+    except ValueError:
+        pass
 
+class Sinogram():
+    """ Two dimensional distribution of leaf-open-time vs position.
+
+    Attributes
+    ----------
+    ##### INCOMPLETE DOCSTRING
+
+    Examples
+    --------
+    
+
+
+    Notes
+    -----
+    Leaf-open time range 0->1.
+
+    """
+
+    def __init__(self, data, meta={}):
+        """ create profile
+
+        Parameters
+        ----------
+        data : np.array
+            2d array projections, each of length 64
+        meta : dict, optional
+
+        """
+
+        self.data = data
+        self.meta = meta
+        self.shape = self.data.shape
+    
 
 def read_csv_file(file_name):
     """ read sinogram from csv file
 
-    Return patient ID and sinogram array produced by reading a RayStation
-    sinogram CSV file with the provided file name.
+    Produced by reading a RayStation sinogram CSV file.
 
     Parameters
     ----------
     file_name : str
-        long file name of csv file
 
     Returns
     -------
-    document_id, array
+    sinogram : np.ndarray-like
 
     Notes
     -----
-    Files are produced by ExportTomoSinogram.py, Brandon Merz,
-    RaySearch customer forum, 1/18/2018.
-    File first row contains demographics.
-    Subsequent rows correspond to couch positions.
-    Leaf-open time range from zero to one.
-
-    Examples
-    --------
-    "Patient name: ANONYMOUS^PATIENT, ID: 00000",,,,,,,,,
-    ,0,0,0,0,0,0,0,0,0,0,0,0,0.39123373,0.366435635 ...
+    As produced by ExportTomoSinogram.py, Brandon Merz, RaySearch 
+    customer forum, 1/18/2018. File first row contains demographics. 
+    Subsequent rows correspond to couch positions. 
 
     """
 
     with open(file_name, 'r') as csvfile:
-
-        pat_name, pat_num = csvfile.readline().split('ID:')
-        pat_name = pat_name.replace('Patient name:', '')
-
-        pat_name_last, pat_name_first = pat_name.split('^')
-        pat_name_last = ''.join([c for c in pat_name_last if c in LETTERS])
-        pat_name_first = ''.join([c for c in pat_name_first if c in LETTERS])
-        pat_num = ''.join([c for c in pat_num if c in DIGITS])
-
-        document_id = pat_num + ' - ' + pat_name_last + ', ' + pat_name_first
+        pat_id = csvfile.readline()
+        meta = {'document_id': re.search(r'ID: (\d*)', pat_id).group(1)  +\
+                       ' - ' + re.search(r'name: (\w*)\^', pat_id).group(1) +\
+                        ', ' + re.search(r'\^(.*), ID:', pat_id).group(1)}
         reader = csv.reader(csvfile, delimiter=',')
-        array = np.asarray([line[1:] for line in reader]).astype(float)
-
-    return document_id, array
+        data = np.asarray([line[1:] for line in reader]).astype(float)
+    return Sinogram(data, meta=meta)
 
 
 def read_bin_file(file_name):
     """ read sinogram from binary file
 
-    Return sinogram np.array produced by reading an Accuray sinogram
-    BIN file with the provided file name.
+    Produced by Accuray sinogram BIN files, as used in calibration plans.
 
     Parameters
     ----------
     file_name : str
-        long file name of csv file
 
     Returns
     -------
-    sinogram : np.array
-
-    Notes
-    -----
-    BIN files are sinograms stored in binary format used in
-    Tomotherapy calibration plans.
+    sinogram : np.array-like
 
     """
 
-    leaf_open_times = np.fromfile(file_name, dtype=float, count=-1, sep='')
-    num_leaves = 64
-    num_projections = int(len(leaf_open_times)/num_leaves)
-    sinogram = np.reshape(leaf_open_times, (num_projections, num_leaves))
+    data = np.fromfile(file_name, dtype=float, count=-1, sep='')
+    data = np.reshape(data, (len(data)//64, 64))
+    return Sinogram(data)
 
-    return sinogram
+
+
+    # leaf_open_times = np.fromfile(file_name, dtype=float, count=-1, sep='')
+    # num_leaves = 64
+    # num_projections = int(len(leaf_open_times)/num_leaves)
+    # sinogram = np.reshape(leaf_open_times, (num_projections, num_leaves))
+    # return sinogram
 
 
 def crop(sinogram):
@@ -232,3 +249,4 @@ def find_modulation_factor(sinogram):
     modulation_factor = max(lfts) / np.mean(lfts)
 
     return modulation_factor
+

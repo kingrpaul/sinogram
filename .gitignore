@@ -2,3 +2,6 @@
 *.pdf
 __init__.py
 tempCodeRunnerFile.py
+.vscode
+__pycache__
+*.pyc

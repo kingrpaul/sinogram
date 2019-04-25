@@ -37,6 +37,7 @@ if 'pymedphys' in __file__:
 
 elif 'sinogram' in __file__:
     sys.path.insert(0, os.path.abspath('.\\src'))
+    import sinogram ######
     from sinogram import read_csv_file
     from sinogram import read_bin_file
     from sinogram import crop
@@ -52,17 +53,19 @@ SIN_BIN_FILE = os.path.join(
 
 
 def test_read_csv_file():
-    pat_id, results = read_csv_file(SIN_CSV_FILE)
-    assert pat_id == '00000 - ANONYMOUS, PATIENT'
-    num_projections = len(results)
-    assert num_projections == 464
-    num_leaves = len(results[0])
-    assert num_leaves == 64
-
+    result = sinogram.read_csv_file(SIN_CSV_FILE)
+    assert result.meta['document_id'] == '00000 - ANONYMOUS, PATIENT'
+    assert result.shape == (464, 64)
+    assert np.all(result.data <= 1.0)
+    assert np.all(result.data >= 0.0)
 
 def test_read_bin_file():
-    assert read_bin_file(SIN_BIN_FILE).shape == (400, 64)
-# convert this to a nested list
+    result = read_bin_file(SIN_BIN_FILE)
+    assert result.shape == (400, 64)
+    assert np.all(result.data <= 1.0)
+    assert np.all(result.data >= 0.0)
+
+
 
 
 def test_crop():
@@ -79,7 +82,8 @@ def test_unshuffle():
 
 
 def test_make_histogram():
-    sinogram = read_csv_file(SIN_CSV_FILE)[-1]
+    sinogram = read_csv_file(SIN_CSV_FILE).data
+    # sinogram = read_csv_file(SIN_CSV_FILE)[-1]
     assert np.allclose(make_histogram(sinogram)[0][0], [0., 0.1])
     assert make_histogram(sinogram)[0][1] == 25894
     # [(array([0. , 0.1]), 25894),
@@ -89,7 +93,8 @@ def test_make_histogram():
 
 
 def test_find_modulation_factor():
-    sinogram = read_csv_file(SIN_CSV_FILE)[-1]
+    sinogram = read_csv_file(SIN_CSV_FILE).data
+    # sinogram = read_csv_file(SIN_CSV_FILE)[-1]
     assert np.isclose(find_modulation_factor(sinogram), 2.762391)
 
 
