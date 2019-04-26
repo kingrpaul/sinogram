@@ -67,6 +67,21 @@ class Sinogram():
         self.meta = meta
         self.shape = self.data.shape
 
+    def __str__(self):
+        """
+        Examples
+        --------
+        ``Sinogram object: 464 projs | 64 leaves | open time (0.0 -> 1.0)``
+        """
+        try:
+            fmt_str = 'Sinogram object: {} projs | {} leaves | open time ({} -> {})'
+            return fmt_str.format(len(self.data),
+                                  len(self.data[0]),
+                                  np.min(self.data), np.max(self.data))
+        except ValueError:
+            return ''  # EMPTY SINOGRAM
+
+
 def from_csv(file_name):
     """ get sinogram from csv file
 
@@ -139,6 +154,8 @@ def to_png(sinogram, file_name):
     subplot.axes.get_xaxis().set_visible(False)
     subplot.axes.get_yaxis().set_visible(False)
     plt.savefig(os.path.splitext(file_name)[0] + '.png')
+    plt.close()
+    
 
 def crop(sinogram):
     """ crop sinogram
@@ -187,55 +204,38 @@ def unshuffle(sinogram):
     return unshufd
 
 
-def make_histogram(sinogram, num_bins=10):
+def make_histogram(sinogram, bins=10, file_name=''):
     """ make a leaf-open-time histogram
 
-    Return a histogram of leaf-open-times for the provided sinogram
-    comprised of the specified number of bins, in the form of a list
-    of tuples: [(bin, count)...] where bin is a 2-element array setting
-    the bounds and count in the number leaf-open-times in the bin.
+    Return a histogram of leaf-open-times for the provided sinogram. If a 
+    filename is provided, then a grapn of the histogram is saved at that
+    location. 
 
     Parameters
     ----------
     sinogram : np.array
-    num_bins : int
+    bins : int, optional
+    file_name : string, optional
 
     Returns
     -------
-    histogram : list of tuples: [(bin, count)...]
-        bin is a 2-element array
+    histogram : np.array
 
     """
 
-    lfts = sinogram.flatten()
+    if file_name:
+        plt.hist(sinogram.data[sinogram.data>0].flatten(), bins=bins)
+        plt.savefig(os.path.splitext(file_name)[0] + '.png')
+        plt.close()
 
-    bin_inc = (max(lfts) - min(lfts)) / num_bins
-    bin_min = min(lfts)
-    bin_max = max(lfts)
-
-    bins_strt = np.arange(bin_min, bin_max,  bin_inc)
-    bins_stop = np.arange(bin_inc, bin_max+bin_inc, bin_inc)
-    bins = np.dstack((bins_strt, bins_stop))[0]
-
-    counts = [0 for b in bins]
-
-    for lft in lfts:
-        for idx, bin in enumerate(bins):
-            if lft >= bin[0] and lft < bin[1]:
-                counts[idx] = counts[idx] + 1
-
-    histogram = list(zip(bins, counts))
-
-    return histogram
+    rng = (0,np.max(sinogram.data))
+    return np.histogram(sinogram.data, bins=bins, range=rng)
 
 
-def find_modulation_factor(sinogram):
-    """ read sinogram from csv file
+def mod_factor(sinogram):
+    """ modulation factor 
 
-    Calculate the ratio of the maximum leaf open time (assumed
-    fully open) to the mean leaf open time, as determined over all
-    non-zero leaf open times, where zero is interpreted as blocked
-    versus modulated.
+    Ratio of max to mean leaf open time, over all non-zero values.
 
     Parameters
     ----------
@@ -246,9 +246,5 @@ def find_modulation_factor(sinogram):
     modulation factor : float
 
     """
-
-    lfts = [lft for lft in sinogram.flatten() if lft > 0.0]
-    modulation_factor = max(lfts) / np.mean(lfts)
-
-    return modulation_factor
+    return np.max(sinogram.data) / np.mean(sinogram.data[sinogram.data>0])
 

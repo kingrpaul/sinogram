@@ -82,17 +82,15 @@ def test_unshuffle():
     assert len(unshuffled[0]) == 10       # number of projections
     assert unshuffled[0][0][0] == 0       # first leaf is closed
 
-
 def test_make_histogram():
-    result = sinogram.from_csv(SIN_CSV_FILE).data
-    assert np.allclose(sinogram.make_histogram(result)[0][0], [0., 0.1])
-    assert sinogram.make_histogram(result)[0][1] == 25894
+    result = sinogram.from_csv(SIN_CSV_FILE)
+    print(sinogram.make_histogram(result, bins=50)[0][0])
+    assert sinogram.make_histogram(result, bins=50)[0][0] == 25894
 
 
-def test_find_modulation_factor():
-    result = sinogram.from_csv(SIN_CSV_FILE).data
-    assert np.isclose(sinogram.find_modulation_factor(result), 2.762391)
-
+def test_find_mod_factor():
+    result = sinogram.from_csv(SIN_CSV_FILE)
+    assert np.isclose(sinogram.mod_factor(result), 2.762391)
 
 if __name__ == "__main__":
     test_from_csv()
@@ -102,4 +100,4 @@ if __name__ == "__main__":
     test_crop()
     test_unshuffle()
     test_make_histogram()
-    test_find_modulation_factor()
+    test_find_mod_factor()
