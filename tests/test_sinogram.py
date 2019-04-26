@@ -84,7 +84,6 @@ def test_unshuffle():
 
 def test_make_histogram():
     result = sinogram.from_csv(SIN_CSV_FILE)
-    print(sinogram.make_histogram(result, bins=50)[0][0])
     assert sinogram.make_histogram(result, bins=50)[0][0] == 25894
 
 
