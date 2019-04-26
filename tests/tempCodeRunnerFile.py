@@ -1,2 +1,2 @@
-    assert np.all(result.data <= 1.0)
-    assert np.all(result.data >= 0.0)
+SIN_CSV_FILE = os.path.join(
+    os.path.dirname(__file__), "./data/sinogram.csv")

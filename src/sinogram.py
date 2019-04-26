@@ -31,8 +31,12 @@ Tomo Sinogram Tools
 from string import digits as DIGITS
 from string import ascii_letters as LETTERS
 import csv
+import os
 import re, sys
 import numpy as np
+from matplotlib.gridspec import GridSpec
+from matplotlib import pyplot as plt
+
 
 if 'pymedphys' in __file__:
     try:
@@ -42,41 +46,29 @@ if 'pymedphys' in __file__:
         pass
 
 class Sinogram():
-    """ Two dimensional distribution of leaf-open-time vs position.
+    """ array of 64-element projections arrays
+    
+   Leaf-open-times (0->1) collected into 64-element projection arrays,
+   which are then collected into the Sinogram array of arbitrary length.
 
     Attributes
     ----------
-    ##### INCOMPLETE DOCSTRING
-
-    Examples
-    --------
-    
-
-
-    Notes
-    -----
-    Leaf-open time range 0->1.
+    data : np.array
+    meta : dict, optional
+    shape: 2-tuple
 
     """
 
     def __init__(self, data, meta={}):
-        """ create profile
-
-        Parameters
-        ----------
-        data : np.array
-            2d array projections, each of length 64
-        meta : dict, optional
-
-        """
-
+        """ instantiation """
+        if type(data) != np.ndarray:
+            data = np.array(data)
         self.data = data
         self.meta = meta
         self.shape = self.data.shape
-    
 
-def read_csv_file(file_name):
-    """ read sinogram from csv file
+def from_csv(file_name):
+    """ get sinogram from csv file
 
     Produced by reading a RayStation sinogram CSV file.
 
@@ -106,7 +98,7 @@ def read_csv_file(file_name):
     return Sinogram(data, meta=meta)
 
 
-def read_bin_file(file_name):
+def from_bin(file_name):
     """ read sinogram from binary file
 
     Produced by Accuray sinogram BIN files, as used in calibration plans.
@@ -125,14 +117,28 @@ def read_bin_file(file_name):
     data = np.reshape(data, (len(data)//64, 64))
     return Sinogram(data)
 
+def to_png(sinogram, file_name):
+    """ get png image file from sinogram
+    
+    Parameters
+    ----------
+    sinogram : np.ndarray-like
+    file_name : str
 
+    Returns
+    -------
+    None
 
-    # leaf_open_times = np.fromfile(file_name, dtype=float, count=-1, sep='')
-    # num_leaves = 64
-    # num_projections = int(len(leaf_open_times)/num_leaves)
-    # sinogram = np.reshape(leaf_open_times, (num_projections, num_leaves))
-    # return sinogram
-
+    """
+    fig = plt.figure(figsize=(len( sinogram.data[0])/100, 
+                              len( sinogram.data)/100), 
+                              dpi=1000)
+    grid_spec = GridSpec(nrows=1, ncols=1)
+    subplot = fig.add_subplot(grid_spec[0])
+    subplot.imshow( sinogram.data, cmap='gist_yarg')
+    subplot.axes.get_xaxis().set_visible(False)
+    subplot.axes.get_yaxis().set_visible(False)
+    plt.savefig(os.path.splitext(file_name)[0] + '.png')
 
 def crop(sinogram):
     """ crop sinogram
@@ -150,15 +156,11 @@ def crop(sinogram):
 
     """
 
-    include = [False for f in range(64)]
-    for i, projection in enumerate(sinogram):
-        for j, leaf in enumerate(projection):
-            if sinogram[i][j] > 0.0:
-                include[j] = True
-    include = include or include[::-1]
-    idx = [i for i, yes in enumerate(include) if yes]
-    sinogram = [[projection[i] for i in idx] for projection in sinogram]
-    return sinogram
+    idx =  list(np.any(sinogram.data > 0, axis=0))
+    idx =  idx or idx[::-1]  # SYMMETRIZE
+    data = sinogram.data[:, idx]
+    meta = {'cropped': True}
+    return Sinogram(data, meta=meta)
 
 
 def unshuffle(sinogram):
