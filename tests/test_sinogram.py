@@ -36,14 +36,8 @@ if 'pymedphys' in __file__:
     from pymedphys_labs.paulking.sinogram import unshuffle
 
 elif 'sinogram' in __file__:
-    sys.path.insert(0, os.path.abspath('.\\src'))
-    import sinogram ######
-    from sinogram import read_csv_file
-    from sinogram import read_bin_file
-    from sinogram import crop
-    from sinogram import make_histogram
-    from sinogram import find_modulation_factor
-    from sinogram import unshuffle
+    sys.path.insert(0, os.path.join(os.getcwd(), 'src'))
+    import sinogram
 
 SIN_CSV_FILE = os.path.join(
     os.path.dirname(__file__), "./data/sinogram.csv")
@@ -60,42 +54,34 @@ def test_read_csv_file():
     assert np.all(result.data >= 0.0)
 
 def test_read_bin_file():
-    result = read_bin_file(SIN_BIN_FILE)
+    result = sinogram.read_bin_file(SIN_BIN_FILE)
     assert result.shape == (400, 64)
     assert np.all(result.data <= 1.0)
     assert np.all(result.data >= 0.0)
 
-
-
-
 def test_crop():
     STRIP = [[0.0]*31 + [1.0]*2 + [0.0]*31,
              [0.0]*31 + [1.0]*2 + [0.0]*31]
-    assert crop(STRIP) == [[1.0, 1.0], [1.0, 1.0]]
+    assert sinogram.crop(STRIP) == [[1.0, 1.0], [1.0, 1.0]]
 
 
 def test_unshuffle():
-    unshuffled = unshuffle([[0]*25 + [1.0]*14 + [0]*25]*510)
+    unshuffled = sinogram.unshuffle([[0]*25 + [1.0]*14 + [0]*25]*510)
     assert len(unshuffled) == 51          # number of angles
     assert len(unshuffled[0]) == 10       # number of projections
     assert unshuffled[0][0][0] == 0       # first leaf is closed
 
 
 def test_make_histogram():
-    sinogram = read_csv_file(SIN_CSV_FILE).data
-    # sinogram = read_csv_file(SIN_CSV_FILE)[-1]
-    assert np.allclose(make_histogram(sinogram)[0][0], [0., 0.1])
-    assert make_histogram(sinogram)[0][1] == 25894
-    # [(array([0. , 0.1]), 25894),
-    #  (array([0.1, 0.2]), 0),
-    #  (array([0.2, 0.3]), 11),
-    #  (array([0.3, 0.4]), 3523), ...]
+    result = sinogram.read_csv_file(SIN_CSV_FILE).data
+    assert np.allclose(sinogram.make_histogram(result)[0][0], [0., 0.1])
+    assert sinogram.make_histogram(result)[0][1] == 25894
 
 
 def test_find_modulation_factor():
-    sinogram = read_csv_file(SIN_CSV_FILE).data
+    result = sinogram.read_csv_file(SIN_CSV_FILE).data
     # sinogram = read_csv_file(SIN_CSV_FILE)[-1]
-    assert np.isclose(find_modulation_factor(sinogram), 2.762391)
+    assert np.isclose(sinogram.find_modulation_factor(result), 2.762391)
 
 
 if __name__ == "__main__":
