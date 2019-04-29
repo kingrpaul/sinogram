@@ -24,9 +24,9 @@
 # program. If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
 
 
-"""
-Tomo Sinogram Tools
-"""
+""" For importing, analyzing, and converting tomotherapy sinograms."""
+
+# pylint: disable=E1101
 
 from string import digits as DIGITS
 from string import ascii_letters as LETTERS
@@ -36,14 +36,6 @@ import re, sys
 import numpy as np
 from matplotlib.gridspec import GridSpec
 from matplotlib import pyplot as plt
-
-
-if 'pymedphys' in __file__:
-    try:
-        from ...libutils import get_imports
-        IMPORTS = get_imports(globals())
-    except ValueError:
-        pass
 
 class Sinogram():
     """ array of 64-element projections arrays
@@ -66,6 +58,12 @@ class Sinogram():
         self.data = data
         self.meta = meta
         self.shape = self.data.shape
+
+        try: 
+            assert 0 <= self.shape[1] <= 64
+            self.meta['cropped'] = self.shape[1] < 64
+        except AssertionError:
+            raise ValueError('invalid number of mlc leaves')
 
     def __str__(self):
         """
@@ -232,7 +230,7 @@ def make_histogram(sinogram, bins=10, file_name=''):
     return np.histogram(sinogram.data, bins=bins, range=rng)
 
 
-def mod_factor(sinogram):
+def get_mod_factor(sinogram):
     """ modulation factor 
 
     Ratio of max to mean leaf open time, over all non-zero values.
@@ -248,3 +246,9 @@ def mod_factor(sinogram):
     """
     return np.max(sinogram.data) / np.mean(sinogram.data[sinogram.data>0])
 
+if __name__ == "__main__":
+    import gui
+    import tkinter as tk
+    root = tk.Tk()
+    gui.GUI(root).pack(side="top", fill="both", expand=True)
+    root.mainloop()

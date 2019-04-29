@@ -23,16 +23,15 @@
 # You should have received a copy of the Apache-2.0 along with this
 # program. If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
 
+
+# pylint: disable=F0401
+
 import sys
 import os
 import numpy as np
 
-if 'pymedphys' in __file__:
-    import pymedphys_labs.paulking.sinogram as sinogram
-
-elif 'sinogram' in __file__:
-    sys.path.insert(0, os.path.join(os.getcwd(), 'src'))
-    import sinogram
+sys.path.insert(0, os.path.join(os.getcwd(), 'src'))
+import sinogram
 
 DATA_PATH = os.path.join(os.getcwd(), 'tests', 'data')
 assert os.path.isdir(DATA_PATH)
@@ -48,6 +47,14 @@ PNG_BIN_FILE = os.path.join(DATA_PATH, 'bin_to_png_result.png')
 for f in [PNG_CSV_FILE, PNG_BIN_FILE]:
     if os.path.isfile(f):
         os.remove(f)
+
+def test_sinogram():
+    assert not str(sinogram.Sinogram([[]]))
+    assert str(sinogram.Sinogram(np.zeros((200,64), dtype=float)))
+    try:
+        str(sinogram.Sinogram(np.zeros((200,65), dtype=float)))
+    except Exception as e:
+        assert 'mlc' in str(e)
 
 def test_from_csv():
     result = sinogram.from_csv(SIN_CSV_FILE)
@@ -87,11 +94,14 @@ def test_make_histogram():
     assert sinogram.make_histogram(result, bins=50)[0][0] == 25894
 
 
-def test_find_mod_factor():
+def test_get_mod_factor():
     result = sinogram.from_csv(SIN_CSV_FILE)
-    assert np.isclose(sinogram.mod_factor(result), 2.762391)
+    assert np.isclose(sinogram.get_mod_factor(result), 2.762391)
+
+
 
 if __name__ == "__main__":
+    test_sinogram()
     test_from_csv()
     test_from_bin()
     test_csv_to_png()
@@ -99,4 +109,4 @@ if __name__ == "__main__":
     test_crop()
     test_unshuffle()
     test_make_histogram()
-    test_find_mod_factor()
+    test_get_mod_factor()

@@ -25,6 +25,8 @@
 
 """ For importing, analyzing, and converting tomotherapy sinograms."""
 
+# pylint: disable=E1101
+
 import os
 import copy
 import sys
@@ -56,8 +58,8 @@ class GUI(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
         tk.Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
-        root.wm_title("Profile Tool")
-        root.resizable(False, False)
+        parent.wm_title("Sinogram Tool")
+        parent.resizable(False, False)
 
         selector_frame = tk.Frame(self, width=5, height=100, background="bisque")
         graph_frame = tk.Frame(self, width=90, height=100, background="bisque")
@@ -83,21 +85,14 @@ class GUI(tk.Frame):
         self.status_label.pack(fill=tk.X, expand=True, side=tk.LEFT)
         self.status_bar.pack(fill=tk.X, expand=False, side=tk.LEFT)
 
-        self._color_palette = {'idx': 0, 'val': dict(enumerate(
-            ['red', 'green', 'orange', 'blue', 'yellow', 'purple1', 'grey']*5))}
-
-        menu = tk.Menu(root)
-        root.config(menu=menu)
+        menu = tk.Menu(parent)
+        parent.config(menu=menu)
         ## ----------
         _file = tk.Menu(menu)
         __from = tk.Menu(_file)
         __to = tk.Menu(_file)
         _edit = tk.Menu(menu)
-        # __resample = tk.Menu(_edit)
-        # __normalise = tk.Menu(_edit)
         _get = tk.Menu(menu)
-        # __value = tk.Menu(_get)
-        # __segment = tk.Menu(_get)
         _help = tk.Menu(menu)
         ## ----------
         menu.add_cascade(label="File", menu=_file)
@@ -111,6 +106,7 @@ class GUI(tk.Frame):
         menu.add_cascade(label="Edit", menu=_edit)
         _edit.add_command(label="Crop", command=self.crop)
         menu.add_cascade(label="Get", menu=_get)
+        _get.add_command(label="Mod Factor", command=self.get_mod_fact)
         menu.add_cascade(label="Help", menu=_help)
         _help.add_command(label="About...", command=self.about)
 
@@ -143,14 +139,12 @@ class GUI(tk.Frame):
         self.sinogram = sinogram.from_bin(filename)
         self.update('from_bin')
 
-
     def to_png(self):
         filename = asksaveasfilename(
             initialdir=self.data_folder, title="PNG Image",
             filetypes=(("PNG Files", "*.png"), ("all files", "*.*")))
         self.sinogram = sinogram.to_png(self.sinogram, filename)
         self.update('to_png')
-
 
     def file_clr(self):
         self.sinogram = np.zeros((200,64), dtype=float)
@@ -159,6 +153,11 @@ class GUI(tk.Frame):
     def crop(self):
         self.sinogram = sinogram.crop(self.sinogram)
         self.update('crop')
+
+    def get_mod_fact(self):
+        mod_factor = sinogram.get_mod_factor(self.sinogram)
+        result = "Modulation Factor: {0:.3f}".format(mod_factor)
+        self.update(result)
 
     def on_key_press(self, event):
         print("you pressed {}".format(event.key))
