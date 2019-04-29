@@ -24,7 +24,7 @@
 # program. If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
 
 
-# pylint: disable=F0401
+# pylint: disable=E1101,F0401
 
 import sys
 import os
@@ -84,21 +84,31 @@ def test_crop():
     assert np.all(sinogram.crop(UNCROPPED).data == CORRECT)
 
 def test_unshuffle():
-    unshuffled = sinogram.unshuffle([[0]*25 + [1.0]*14 + [0]*25]*510)
-    assert len(unshuffled) == 51          # number of angles
-    assert len(unshuffled[0]) == 10       # number of projections
-    assert unshuffled[0][0][0] == 0       # first leaf is closed
+    shuffled = sinogram.Sinogram([[0]*25 + [1.0]*14 + [0]*25]*510)
+    unshuffled = sinogram.unshuffle(shuffled)
+    assert len(unshuffled) == 51      # angles
+    assert len(unshuffled[0]) == 10   # projections
+    assert unshuffled[0][0][0] == 0   # first leaf closed
+
+def test_to_unshuff_pdf():
+    result = sinogram.from_csv(SIN_CSV_FILE)
+    f = os.path.join(DATA_PATH,result.meta['document_id'] + ' Sinogram.pdf')
+    if os.path.isfile(f):
+        os.remove(f)
+    sinogram.to_unshuff_pdf(result, file_name=f)
+    assert os.path.isfile(f)
+
 
 def test_make_histogram():
     result = sinogram.from_csv(SIN_CSV_FILE)
     assert sinogram.make_histogram(result, bins=50)[0][0] == 25894
 
-
 def test_get_mod_factor():
     result = sinogram.from_csv(SIN_CSV_FILE)
     assert np.isclose(sinogram.get_mod_factor(result), 2.762391)
 
-
+if '':
+    print('hi')
 
 if __name__ == "__main__":
     test_sinogram()
@@ -108,5 +118,6 @@ if __name__ == "__main__":
     test_bin_to_png()
     test_crop()
     test_unshuffle()
+    test_to_unshuff_pdf()
     test_make_histogram()
     test_get_mod_factor()

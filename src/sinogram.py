@@ -26,7 +26,7 @@
 
 """ For importing, analyzing, and converting tomotherapy sinograms."""
 
-# pylint: disable=E1101
+# pylint: disable=E1101,F0401
 
 from string import digits as DIGITS
 from string import ascii_letters as LETTERS
@@ -196,10 +196,44 @@ def unshuffle(sinogram):
     """
     unshufd = [[] for i in range(51)]
     idx = 0
-    for prj in sinogram:
+    for prj in sinogram.data:
         unshufd[idx].append(prj)
         idx = (idx + 1) % 51
     return unshufd
+
+
+def to_unshuff_pdf(sinogram, file_name=''):
+    """ export unshuffled sinogram to pdf
+
+    Convert a sinogram file into an unshuffled PDF fluence map collection, by
+    separating leaf pattern into the 51 discrete tomtherapy angles.
+
+    Parameters
+    ----------
+    sinogram : np.array
+    file_name : str, optional
+        supplied -> save to file, no supplied -> show on display
+
+    """
+
+    fig = plt.figure(figsize=(7.5, 11))
+    grid_spec = GridSpec(nrows=9, ncols=6, hspace=None, wspace=None,
+                         left=0.05, right=0.9, bottom=0.02, top=0.975)
+
+    fig.text(0.03, 0.985, os.path.split(file_name)[-1],
+             horizontalalignment='left', verticalalignment='center')
+
+    for idx, angle in enumerate(unshuffle(crop(sinogram))):
+        subplot = fig.add_subplot(grid_spec[idx])
+        _ = subplot.imshow(angle, cmap='gray')
+        subplot.axes.get_xaxis().set_visible(False)
+        subplot.axes.get_yaxis().set_visible(False)
+        subplot.set_title('{0:.0f} dg'.format(7.06*idx), fontsize=9)
+
+    if file_name:
+        plt.savefig(file_name)
+    else:
+        plt.show()
 
 
 def make_histogram(sinogram, bins=10, file_name=''):

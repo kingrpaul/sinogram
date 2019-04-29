@@ -25,7 +25,7 @@
 
 """ For importing, analyzing, and converting tomotherapy sinograms."""
 
-# pylint: disable=E1101
+# pylint: disable=E1101,F0401
 
 import os
 import copy
@@ -101,6 +101,7 @@ class GUI(tk.Frame):
         __from.add_command(label="BIN", command=self.from_bin)
         _file.add_cascade(label='To ...', menu=__to)
         __to.add_command(label="PNG", command=self.to_png)
+        __to.add_command(label="UnshuffPDF", command=self.to_unshuff_pdf)
         _file.add_command(label="Clear", command=self.file_clr)
         _file.add_command(label="Exit", command=self._quit)
         menu.add_cascade(label="Edit", menu=_edit)
@@ -145,6 +146,14 @@ class GUI(tk.Frame):
             filetypes=(("PNG Files", "*.png"), ("all files", "*.*")))
         self.sinogram = sinogram.to_png(self.sinogram, filename)
         self.update('to_png')
+
+    def to_unshuff_pdf(self):
+        filename = asksaveasfilename(
+            initialdir=self.data_folder, title="PDF Document",
+            initialfile=self.sinogram.meta['document_id'],
+            filetypes=(("PDF Files", "*.pdf"), ("all files", "*.*")))
+        self.sinogram = sinogram.to_unshuff_pdf(self.sinogram, filename)
+        self.update('to_unshuff_pdf')
 
     def file_clr(self):
         self.sinogram = np.zeros((200,64), dtype=float)
