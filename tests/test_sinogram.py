@@ -30,7 +30,8 @@ import sys
 import os
 import numpy as np
 
-sys.path.insert(0, os.path.join(os.getcwd(), 'src'))
+SIN_PATH = os.path.abspath(os.path.join(os.path.split(__file__)[0], os.pardir))
+sys.path.insert(0, SIN_PATH)
 import sinogram
 
 DATA_PATH = os.path.join(os.getcwd(), 'tests', 'data')
@@ -106,9 +107,6 @@ def test_make_histogram():
 def test_get_mod_factor():
     result = sinogram.from_csv(SIN_CSV_FILE)
     assert np.isclose(sinogram.get_mod_factor(result), 2.762391)
-
-if '':
-    print('hi')
 
 if __name__ == "__main__":
     test_sinogram()
