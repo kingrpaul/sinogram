@@ -34,7 +34,8 @@ SIN_PATH = os.path.abspath(os.path.join(os.path.split(__file__)[0], os.pardir))
 sys.path.insert(0, SIN_PATH)
 import sinogram
 
-DATA_PATH = os.path.join(os.getcwd(), 'tests', 'data')
+DATA_PATH = os.path.abspath(
+    os.path.join(os.path.split(__file__)[0], os.pardir, 'tests', 'data'))
 assert os.path.isdir(DATA_PATH)
 
 SIN_CSV_FILE = os.path.join(DATA_PATH, "sinogram.csv")

@@ -87,14 +87,14 @@ def from_csv(file_name):
 
     Parameters
     ----------
-    file_name : str
+    file_name: str
 
     Returns
     -------
-    sinogram : np.ndarray-like
+    sinogram: np.ndarray-like
 
-    Notes
-    -----
+    Note
+    ----
     As produced by ExportTomoSinogram.py, Brandon Merz, RaySearch 
     customer forum, 1/18/2018. File first row contains demographics. 
     Subsequent rows correspond to couch positions. 
@@ -136,6 +136,7 @@ def to_png(sinogram, file_name):
     Parameters
     ----------
     sinogram : np.ndarray-like
+	
     file_name : str
 
     Returns
@@ -187,9 +188,9 @@ def unshuffle(sinogram):
 
     Parameters
     ----------
-    sinogram : np.array
-
-    Returns
+    sinogram: np.array
+	
+	Returns
     -------
     unshuffled: list of sinograms
 
@@ -205,15 +206,15 @@ def unshuffle(sinogram):
 def to_unshuff_pdf(sinogram, file_name=''):
     """ export unshuffled sinogram to pdf
 
-    Convert a sinogram file into an unshuffled PDF fluence map collection, by
-    separating leaf pattern into the 51 discrete tomtherapy angles.
+    Convert a sinogram into an unshuffled PDF fluence map collection, by
+    separating leaf pattern into the 51 discrete tomotherapy angles.
 
     Parameters
     ----------
     sinogram : np.array
     file_name : str, optional
         supplied -> save to file, no supplied -> show on display
-
+		
     """
 
     fig = plt.figure(figsize=(7.5, 11))
@@ -246,7 +247,9 @@ def make_histogram(sinogram, bins=10, file_name=''):
     Parameters
     ----------
     sinogram : np.array
+
     bins : int, optional
+
     file_name : string, optional
 
     Returns

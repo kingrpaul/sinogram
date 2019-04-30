@@ -1,2 +1,1 @@
-SIN_CSV_FILE = os.path.join(
-    os.path.dirname(__file__), "./data/sinogram.csv")
+os.path.abspath(os.path.join(os.path.split(__file__)[0], os.pardir))
