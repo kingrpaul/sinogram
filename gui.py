@@ -112,7 +112,8 @@ class GUI(tk.Frame):
         _help.add_command(label="About...", command=self.about)
 
         self.sinogram = np.zeros((200,64), dtype=float)
-        self.data_folder = os.path.join(os.getcwd(), 'tests','data')
+        self.data_folder = os.path.abspath(
+            os.path.join(os.path.split(__file__)[0], 'tests','data'))
 
         self.update('__init__')
         self.canvas.draw()
@@ -148,9 +149,13 @@ class GUI(tk.Frame):
         self.update('to_png')
 
     def to_unshuff_pdf(self):
+        try:
+            initialfile = self.sinogram.meta['document_id']
+        except KeyError:
+            initialfile = ''
         filename = asksaveasfilename(
             initialdir=self.data_folder, title="PDF Document",
-            initialfile=self.sinogram.meta['document_id'],
+            initialfile=initialfile,
             filetypes=(("PDF Files", "*.pdf"), ("all files", "*.*")))
         self.sinogram = sinogram.to_unshuff_pdf(self.sinogram, filename)
         self.update('to_unshuff_pdf')
