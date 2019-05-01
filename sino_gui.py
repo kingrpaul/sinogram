@@ -48,7 +48,7 @@ from matplotlib.figure import Figure
 from functools import partial
 import PIL
 
-import sinogram
+import sino_funct as sinogram
 
 class GUI(tk.Frame):
     """ Graphical User Interface for Sinogram Class
@@ -113,7 +113,7 @@ class GUI(tk.Frame):
 
         self.sinogram = np.zeros((200,64), dtype=float)
         self.data_folder = os.path.abspath(
-            os.path.join(os.path.split(__file__)[0], 'tests','data'))
+            os.path.join(os.path.split(__file__)[0], 'test_data'))
 
         self.update('__init__')
         self.canvas.draw()

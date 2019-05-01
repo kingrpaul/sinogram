@@ -34,10 +34,10 @@ import numpy as np
 # sys.path.insert(0, SIN_PATH)
 # import sinogram
 
-from .test import sinogram
+import sino_funct as sinogram
 
 DATA_PATH = os.path.abspath(
-    os.path.join(os.path.split(__file__)[0], os.pardir, 'tests', 'data'))
+    os.path.join(os.path.split(__file__)[0], 'test_data'))
 assert os.path.isdir(DATA_PATH)
 
 SIN_CSV_FILE = os.path.join(DATA_PATH, "sinogram.csv")

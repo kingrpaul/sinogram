@@ -37,10 +37,6 @@ import numpy as np
 from matplotlib.gridspec import GridSpec
 from matplotlib import pyplot as plt
 
-# from tests import test_sinogram
-# print(test_sinogram)
-
-
 
 class Sinogram():
     """ array of 64-element projections arrays
@@ -289,7 +285,7 @@ def get_mod_factor(sinogram):
     return np.max(sinogram.data) / np.mean(sinogram.data[sinogram.data>0])
 
 if __name__ == "__main__":
-    import gui
+    import sino_gui as gui
     import tkinter as tk
     root = tk.Tk()
     gui.GUI(root).pack(side="top", fill="both", expand=True)
