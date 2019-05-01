@@ -39,16 +39,19 @@ from matplotlib import pyplot as plt
 
 
 class Sinogram():
-    """ array of 64-element projections arrays
-    
-   Leaf-open-times (0->1) collected into 64-element projection arrays,
-   which are then collected into the Sinogram array of arbitrary length.
+    """ array of 64-element projection arrays
 
     Attributes
     ----------
-    data : np.array
-    meta : dict, optional
+
     shape: 2-tuple
+           (number of projections, number of leaves<=64)
+
+    data : np.array
+           0 <= leaf-open-time <= 1
+
+    meta : dict, optional
+
 
     """
 
@@ -82,23 +85,18 @@ class Sinogram():
 
 
 def from_csv(file_name):
-    """ return sinogram from csv file
+    """ csv file -> sinogram
 
-    Produced by reading a RayStation sinogram CSV file.
+    From RayStation clinical sinogram CSV file as extracted by
+    ExportTomoSinogram.py, Brandon Merz, RaySearch customer forum, 1/18/2018.
 
     Parameters
     ----------
-    file_name: str
+    file_name : str
 
     Returns
     -------
-    sinogram: np.ndarray-like
-
-    Note
-    ----
-    As produced by ExportTomoSinogram.py, Brandon Merz, RaySearch 
-    customer forum, 1/18/2018. File first row contains demographics. 
-    Subsequent rows correspond to couch positions. 
+    sinogram : np.ndarray-like
 
     """
 
@@ -113,9 +111,9 @@ def from_csv(file_name):
 
 
 def from_bin(file_name):
-    """ return sinogram from binary file
+    """  binary file -> sinogram
 
-    Produced by Accuray sinogram BIN files, as used in calibration plans.
+    From Accuray sinogram BIN files, as used in calibration plans.
 
     Parameters
     ----------
@@ -132,17 +130,13 @@ def from_bin(file_name):
     return Sinogram(data)
 
 def to_png(sinogram, file_name):
-    """ write png image file from sinogram
+    """sinogram -> png image file
     
     Parameters
     ----------
     sinogram : np.ndarray-like
 	
     file_name : str
-
-    Returns
-    -------
-    None
 
     """
     fig = plt.figure(figsize=(len( sinogram.data[0])/100, 
@@ -160,16 +154,17 @@ def to_png(sinogram, file_name):
 def crop(uncropped):
     """ crop sinogram
 
-    Return a symmetrically cropped sinogram, such that always-closed
-    leaves are excluded and the sinogram center is maintained.
+    Return symmetrically cropped sinogram, excluding usused opposing leaf pairs.
 
     Parameters
     ----------
-    uncropped : np.array
+
+    uncropped : Sinogram
 
     Returns
     -------
-    cropped : np.array
+
+    cropped : Sinogram
 
     """
 
@@ -204,17 +199,19 @@ def unshuffle(shuffled):
     return unshuffled
 
 
-def to_unshuff_pdf(sinogram, file_name=''):
+def to_unshuff_pdf(sinogram, file_name=""):
     """ export unshuffled sinogram to pdf
 
-    Convert a sinogram into an unshuffled PDF fluence map collection, by
-    separating leaf pattern into the 51 discrete tomotherapy angles.
-
+    Convert sinogram into unshuffled PDF fluence map collection, separating 
+    leaf pattern into the 51 tomotherapy angles. Display instead, if 
+    destination file_name not supplied.
+    
     Parameters
     ----------
+
     sinogram : np.array
+
     file_name : str, optional
-        supplied -> save to file, no supplied -> show on display
 		
     """
 
@@ -238,12 +235,11 @@ def to_unshuff_pdf(sinogram, file_name=''):
         plt.show()
 
 
-def make_histogram(sinogram, bins=10, file_name=''):
-    """ make a leaf-open-time histogram
+def get_histogram(sinogram, bins=10, file_name=''):
+    """ make leaf-open-time histogram
 
-    Return a histogram of leaf-open-times for the provided sinogram. If a 
-    filename is provided, then a grapn of the histogram is saved at that
-    location. 
+    Return histogram of leaf-open-times. If file_name provided, then histogram 
+    saved as a graph. 
 
     Parameters
     ----------
@@ -271,11 +267,11 @@ def make_histogram(sinogram, bins=10, file_name=''):
 def get_mod_factor(sinogram):
     """ modulation factor 
 
-    Ratio of max to mean leaf open time, over all non-zero values.
+    Ratio of max leaf open time to mean over all non-zero values.
 
     Parameters
     ----------
-    sinogram : np.array
+    sinogram : np.array-like
 
     Returns
     -------

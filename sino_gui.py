@@ -23,7 +23,7 @@
 # You should have received a copy of the Apache-2.0 along with this
 # program. If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
 
-""" For importing, analyzing, and converting tomotherapy sinograms."""
+""" **Graphical User Interface** """
 
 # pylint: disable=E1101,F0401
 
@@ -108,6 +108,7 @@ class GUI(tk.Frame):
         _edit.add_command(label="Crop", command=self.crop)
         menu.add_cascade(label="Get", menu=_get)
         _get.add_command(label="Mod Factor", command=self.get_mod_fact)
+        _get.add_command(label="Histogram", command=self.get_histogram)        
         menu.add_cascade(label="Help", menu=_help)
         _help.add_command(label="About...", command=self.about)
 
@@ -172,6 +173,18 @@ class GUI(tk.Frame):
         mod_factor = sinogram.get_mod_factor(self.sinogram)
         result = "Modulation Factor: {0:.3f}".format(mod_factor)
         self.update(result)
+
+    def get_histogram(self):
+        try:
+            initialfile = self.sinogram.meta['document_id']
+        except KeyError:
+            initialfile = ''
+        filename = asksaveasfilename(
+            initialdir=self.data_folder, title="PNG Image",
+            initialfile=initialfile,
+            filetypes=(("PNG Images", "*.png"), ("all files", "*.*")))
+        sinogram.get_histogram(self.sinogram, bins=10, file_name=initialfile)
+        self.update('get_histogram')
 
     def on_key_press(self, event):
         print("you pressed {}".format(event.key))

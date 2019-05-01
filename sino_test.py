@@ -23,6 +23,7 @@
 # You should have received a copy of the Apache-2.0 along with this
 # program. If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
 
+""" **Testing** """
 
 # pylint: disable=E1101,F0401
 
@@ -103,9 +104,9 @@ def test_to_unshuff_pdf():
     assert os.path.isfile(f)
 
 
-def test_make_histogram():
+def test_get_histogram():
     result = sinogram.from_csv(SIN_CSV_FILE)
-    assert sinogram.make_histogram(result, bins=50)[0][0] == 25894
+    assert sinogram.get_histogram(result, bins=50)[0][0] == 25894
 
 def test_get_mod_factor():
     result = sinogram.from_csv(SIN_CSV_FILE)
@@ -120,5 +121,5 @@ if __name__ == "__main__":
     test_crop()
     test_unshuffle()
     test_to_unshuff_pdf()
-    test_make_histogram()
+    test_get_histogram()
     test_get_mod_factor()
