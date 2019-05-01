@@ -37,6 +37,7 @@ import numpy as np
 from matplotlib.gridspec import GridSpec
 from matplotlib import pyplot as plt
 
+
 class Sinogram():
     """ array of 64-element projections arrays
     
@@ -81,20 +82,20 @@ class Sinogram():
 
 
 def from_csv(file_name):
-    """ get sinogram from csv file
+    """ return sinogram from csv file
 
     Produced by reading a RayStation sinogram CSV file.
 
     Parameters
     ----------
-    file_name : str
+    file_name: str
 
     Returns
     -------
-    sinogram : np.ndarray-like
+    sinogram: np.ndarray-like
 
-    Notes
-    -----
+    Note
+    ----
     As produced by ExportTomoSinogram.py, Brandon Merz, RaySearch 
     customer forum, 1/18/2018. File first row contains demographics. 
     Subsequent rows correspond to couch positions. 
@@ -112,7 +113,7 @@ def from_csv(file_name):
 
 
 def from_bin(file_name):
-    """ read sinogram from binary file
+    """ return sinogram from binary file
 
     Produced by Accuray sinogram BIN files, as used in calibration plans.
 
@@ -131,11 +132,12 @@ def from_bin(file_name):
     return Sinogram(data)
 
 def to_png(sinogram, file_name):
-    """ get png image file from sinogram
+    """ write png image file from sinogram
     
     Parameters
     ----------
     sinogram : np.ndarray-like
+	
     file_name : str
 
     Returns
@@ -155,7 +157,7 @@ def to_png(sinogram, file_name):
     plt.close()
     
 
-def crop(sinogram):
+def crop(uncropped):
     """ crop sinogram
 
     Return a symmetrically cropped sinogram, such that always-closed
@@ -163,22 +165,22 @@ def crop(sinogram):
 
     Parameters
     ----------
-    sinogram : np.array
+    uncropped : np.array
 
     Returns
     -------
-    sinogram : np.array
+    cropped : np.array
 
     """
 
-    idx =  list(np.any(sinogram.data > 0, axis=0))
+    idx =  list(np.any(uncropped.data > 0, axis=0))
     idx =  idx or idx[::-1]  # SYMMETRIZE
-    data = sinogram.data[:, idx]
+    data = uncropped.data[:, idx]
     meta = {'cropped': True}
     return Sinogram(data, meta=meta)
 
 
-def unshuffle(sinogram):
+def unshuffle(shuffled):
     """ unshuffle singram by angle
 
     Return a list of 51 sinograms, by unshuffling the provided
@@ -187,33 +189,33 @@ def unshuffle(sinogram):
 
     Parameters
     ----------
-    sinogram : np.array
-
-    Returns
+    shuffled: np.array
+	
+	Returns
     -------
     unshuffled: list of sinograms
 
     """
-    unshufd = [[] for i in range(51)]
+    unshuffled = [[] for i in range(51)]
     idx = 0
-    for prj in sinogram.data:
-        unshufd[idx].append(prj)
+    for projection in shuffled.data:
+        unshuffled[idx].append(projection)
         idx = (idx + 1) % 51
-    return unshufd
+    return unshuffled
 
 
 def to_unshuff_pdf(sinogram, file_name=''):
     """ export unshuffled sinogram to pdf
 
-    Convert a sinogram file into an unshuffled PDF fluence map collection, by
-    separating leaf pattern into the 51 discrete tomtherapy angles.
+    Convert a sinogram into an unshuffled PDF fluence map collection, by
+    separating leaf pattern into the 51 discrete tomotherapy angles.
 
     Parameters
     ----------
     sinogram : np.array
     file_name : str, optional
         supplied -> save to file, no supplied -> show on display
-
+		
     """
 
     fig = plt.figure(figsize=(7.5, 11))
@@ -246,7 +248,9 @@ def make_histogram(sinogram, bins=10, file_name=''):
     Parameters
     ----------
     sinogram : np.array
+
     bins : int, optional
+
     file_name : string, optional
 
     Returns
@@ -275,13 +279,13 @@ def get_mod_factor(sinogram):
 
     Returns
     -------
-    modulation factor : float
+    modulation_factor : float
 
     """
     return np.max(sinogram.data) / np.mean(sinogram.data[sinogram.data>0])
 
 if __name__ == "__main__":
-    import gui
+    import sino_gui as gui
     import tkinter as tk
     root = tk.Tk()
     gui.GUI(root).pack(side="top", fill="both", expand=True)
